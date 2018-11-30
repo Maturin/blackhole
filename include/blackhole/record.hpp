@@ -47,7 +47,12 @@ public:
 
     auto pid() const noexcept -> std::uint64_t;
     auto lwp() const noexcept -> std::uint64_t;
+
+#ifdef _MSC_VER
+    auto tid() const noexcept -> std::thread::id;
+#else
     auto tid() const noexcept -> std::thread::native_handle_type;
+#endif
 
     auto formatted() const noexcept -> const string_view&;
     auto attributes() const noexcept -> const attribute_pack&;

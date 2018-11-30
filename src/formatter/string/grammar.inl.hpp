@@ -50,8 +50,10 @@ auto parse_pattern(std::string pattern) -> std::vector<ph::leftover_t::token_t>;
 }  // namespace v1
 }  // namespace blackhole
 
+#ifndef _MSC_VER 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
+#endif 
 
 typedef boost::optional<boost::variant<double, std::string>> adapt1_type;
 
@@ -74,4 +76,6 @@ BOOST_FUSION_ADAPT_STRUCT(blackhole::formatter::string::grammar_result_t,
     (std::string, spec)
 )
 
+#ifndef _MSC_VER 
 #pragma clang diagnostic pop
+#endif

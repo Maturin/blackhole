@@ -7,7 +7,6 @@
 #include "blackhole/registry.hpp"
 
 #include "../memory.hpp"
-#include "../util/deleter.hpp"
 #include "asynchronous.hpp"
 
 namespace blackhole {
@@ -23,6 +22,8 @@ public:
 builder<sink::asynchronous_t>::builder(std::unique_ptr<sink_t> wrapped) :
     d(new inner_t{std::move(wrapped), sink::overflow_policy_factory_t().create("wait"), 10})
 {}
+
+builder<sink::asynchronous_t>::~builder() = default;
 
 auto builder<sink::asynchronous_t>::factor(std::size_t value) & -> builder& {
     d->factor = value;
@@ -79,8 +80,6 @@ auto factory<sink::asynchronous_t>::from(const config::node_t& config) const ->
 
     return std::unique_ptr<sink_t>(new sink::asynchronous_t(std::move(sink), factor, std::move(overflow)));
 }
-
-template auto deleter_t::operator()(builder<sink::asynchronous_t>::inner_t* value) -> void;
 
 }  // namespace v1
 }  // namespace blackhole

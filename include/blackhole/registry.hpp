@@ -11,10 +11,14 @@ inline namespace v1 {
 
 class builder_t {
     const registry_t& registry;
-    std::unique_ptr<config::factory_t, deleter_t> factory;
+    std::unique_ptr<config::factory_t> factory;
 
 public:
     builder_t(const registry_t& registry, std::unique_ptr<config::factory_t> factory);
+
+    builder_t(builder_t&& );
+
+   ~builder_t();
 
     auto configurator() noexcept -> config::factory_t&;
 

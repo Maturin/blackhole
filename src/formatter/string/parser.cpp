@@ -3,6 +3,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/variant/variant.hpp>
 
+#include <cctype>
+
 #include "grammar.hpp"
 
 namespace blackhole {
@@ -178,6 +180,7 @@ parser_t::next() -> boost::optional<token_t> {
     case state_t::placeholder:
         return parse_placeholder();
     case state_t::broken:
+    default:
         throw_<broken_t>();
     }
 }
@@ -316,9 +319,7 @@ parser_t::exact(const_iterator pos, const Range& range) const -> bool {
 }
 
 template<class Exception, class... Args>
-__attribute__((noreturn))
-auto
-parser_t::throw_(Args&&... args) -> void {
+[[noreturn]] auto parser_t::throw_(Args&&... args) -> void {
     state = state_t::broken;
     throw Exception(static_cast<std::size_t>(std::distance(std::begin(pattern), pos)), pattern,
         std::forward<Args>(args)...);

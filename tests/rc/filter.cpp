@@ -1,8 +1,9 @@
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
 
 #include <blackhole/handler.hpp>
 #include <blackhole/root.hpp>
+
+#include <thread>
 
 using namespace blackhole;
 
@@ -12,7 +13,7 @@ int main(int, char** argv) {
 
     root_logger_t logger({});
 
-    std::vector<boost::thread> threads;
+    std::vector<std::thread> threads;
 
     for (int tid = 0; tid < thread_num; ++tid) {
         threads.emplace_back([&] {

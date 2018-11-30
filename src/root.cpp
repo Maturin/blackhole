@@ -13,7 +13,6 @@
 #include "blackhole/scope/watcher.hpp"
 
 #include "spinlock.hpp"
-#include "util/deleter.hpp"
 
 namespace blackhole {
 inline namespace v1 {
@@ -216,6 +215,8 @@ builder<root_logger_t>::builder() :
     d->filter = [](const record_t&) -> bool { return true; };
 }
 
+builder<root_logger_t>::~builder() = default;
+
 auto builder<root_logger_t>::add(std::unique_ptr<handler_t> handler) & -> builder& {
     d->handlers.push_back(std::move(handler));
     return *this;
@@ -229,8 +230,6 @@ auto builder<root_logger_t>::build() && -> std::unique_ptr<result_type> {
     std::unique_ptr<root_logger_t> log(new root_logger_t(std::move(d->filter), std::move(d->handlers)));
     return log;
 }
-
-template auto deleter_t::operator()(builder<root_logger_t>::inner_t*) -> void;
 
 }  // namespace v1
 }  // namespace blackhole

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <ratio>
+#include <string>
 
 #include "blackhole/factory.hpp"
 
@@ -84,7 +85,7 @@ typedef binary_unit<std::uintmax_t, std::ratio<1024 * 1024 * 1024>> gibibytes_t;
 template<>
 class builder<sink::file_t> {
     class inner_t;
-    std::unique_ptr<inner_t, deleter_t> p;
+    std::unique_ptr<inner_t> p;
 
 public:
     /// Constructs a file sink builder with the given file path pattern.
@@ -92,6 +93,8 @@ public:
     /// By default this builder will produce file sinks with automatic flush policy, which can be
     /// changed using threshold methods.
     explicit builder(const std::string& path);
+    
+    ~builder();
 
     /// Specifies flush threshold in terms of bytes written.
     ///

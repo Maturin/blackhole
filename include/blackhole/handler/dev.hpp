@@ -15,10 +15,11 @@ class dev_t;
 template<>
 class builder<experimental::handler::dev_t> {
     class inner_t;
-    std::unique_ptr<inner_t, deleter_t> d;
+    std::unique_ptr<inner_t> d;
 
 public:
     builder();
+    ~builder();
 
     auto build() && -> std::unique_ptr<handler_t>;
 };

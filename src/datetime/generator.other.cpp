@@ -1,4 +1,5 @@
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(_MSC_VER)
+// Does compile with Visual Studio 2017 without a warning (level 3).
 
 #include "generator.other.hpp"
 

@@ -34,7 +34,7 @@ class asynchronous_t;
 template<>
 class builder<sink::asynchronous_t> {
     class inner_t;
-    std::unique_ptr<inner_t, deleter_t> d;
+    std::unique_ptr<inner_t> d;
 
 public:
     /// Constructs a sink builder from some other sink.
@@ -44,6 +44,8 @@ public:
     ///
     /// \param wrapped The target sink (usually the blocking one) that is need to make asynchronous.
     explicit builder(std::unique_ptr<sink_t> wrapped);
+    
+    ~builder();
 
     /// Sets the queue size factor.
     auto factor(std::size_t value) & -> builder&;

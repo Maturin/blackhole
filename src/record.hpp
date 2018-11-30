@@ -13,7 +13,12 @@ struct record_t::inner_t {
     time_point timestamp;
 
     std::uint64_t lwp;
+
+#ifdef _MSC_VER
+    std::thread::id tid;
+#else
     std::thread::native_handle_type tid;
+#endif
     char __pad[8];
 
     std::reference_wrapper<const attribute_pack> attributes;

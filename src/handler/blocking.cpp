@@ -10,7 +10,6 @@
 #include "blackhole/sink.hpp"
 
 #include "../memory.hpp"
-#include "../util/deleter.hpp"
 #include "blocking.hpp"
 
 namespace blackhole {
@@ -48,6 +47,8 @@ public:
 builder<blocking_t>::builder() :
     d(new inner_t)
 {}
+
+builder<blocking_t>::~builder() = default;
 
 auto builder<blocking_t>::set(std::unique_ptr<formatter_t> formatter) & -> builder& {
     d->formatter = std::move(formatter);
@@ -95,8 +96,6 @@ auto factory<blocking_t>::from(const config::node_t& config) const -> std::uniqu
 
     return std::move(builder).build();
 }
-
-template auto deleter_t::operator()(builder<handler::blocking_t>::inner_t*) -> void;
 
 }  // namespace v1
 }  // namespace blackhole

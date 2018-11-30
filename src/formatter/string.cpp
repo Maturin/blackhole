@@ -18,7 +18,6 @@
 #include "../attribute.hpp"
 #include "../memory.hpp"
 #include "../procname.hpp"
-#include "../util/deleter.hpp"
 #include "../util/time.hpp"
 #include "string/parser.hpp"
 #include "string/token.hpp"
@@ -206,6 +205,11 @@ public:
     }
 
     auto operator()(const ph::thread<name>& token) const -> void {
+#ifdef _MSC_VER
+        // MTD There has to be a Windows specific way of getting the thread-name. But
+        //     does exist a portable way too? In std::thread or boost::thread?
+        writer.write(token.spec, "<unknown>");
+#else
         std::array<char, 16> buffer;
         const auto rc = ::pthread_getname_np(record.tid(), buffer.data(), buffer.size());
 
@@ -214,6 +218,7 @@ public:
         } else {
             writer.write(token.spec, "<unnamed>");
         }
+#endif
     }
 
     auto operator()(const ph::severity<num>& token) const -> void {
@@ -350,8 +355,10 @@ public:
 };
 
 builder<string_t>::builder(std::string pattern) :
-    p(new inner_t{std::move(pattern), {}}, deleter_t())
+    p(new inner_t{std::move(pattern), {}})
 {}
+
+builder<string_t>::~builder() = default;
 
 // TODO: TEST!
 auto builder<string_t>::mapping(formatter::severity_map sevmap) & -> builder& {
@@ -398,8 +405,6 @@ auto factory<string_t>::from(const config::node_t& config) const -> std::unique_
 
     return blackhole::make_unique<string_t>(std::move(pattern));
 }
-
-template auto deleter_t::operator()(builder<formatter::string_t>::inner_t* value) -> void;
 
 }  // namespace v1
 }  // namespace blackhole

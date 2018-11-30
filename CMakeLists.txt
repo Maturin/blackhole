@@ -16,12 +16,28 @@ set(LIBRARY_NAME blackhole)
 project(${LIBRARY_NAME})
 
 find_package(Boost 1.46 REQUIRED COMPONENTS
-    system
-    thread)
+    system)
 
 include_directories(BEFORE SYSTEM
     ${PROJECT_SOURCE_DIR}/foreign/libcds
     ${PROJECT_SOURCE_DIR}/foreign/rapidjson/include)
+
+if (MSVC)
+    set(BLACKHOLE_SYSLOG_FILES "")
+    set(BLACKHOLE_SYSLOG_TEST_FILES "")
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    # Windows 7, otherwise boost creates some warning, becuase _WIN32_WINNT is unset
+    add_definitions(/D _WIN32_WINNT=0x0601)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+else (MSVC)
+    set(BLACKHOLE_SYSLOG_FILES
+        src/sink/syslog.cpp
+        src/sink/syslog.hpp
+        include/blackhole/sink/syslog.hpp)
+    set(BLACKHOLE_SYSLOG_TEST_FILES
+        tests/src/unit/sink/syslog.cpp)
+endif (MSVC)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
@@ -62,9 +78,9 @@ add_library(${LIBRARY_NAME} SHARED
     src/sink/null.cpp
     src/sink/socket/tcp.cpp
     src/sink/socket/udp.cpp
-    src/sink/syslog.cpp
     src/termcolor.cpp
     src/wrapper.cpp
+    ${BLACKHOLE_SYSLOG_FILES}
 )
 
 # Set the Standard version.
@@ -86,7 +102,7 @@ endif ()
 
 # Set maximum warnings level depending on compiler.
 # TODO: target_maximum_warnings(${LIBRARY_NAME})
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     target_compile_options(${LIBRARY_NAME} PRIVATE
         -Weverything
         -Wno-c++98-compat
@@ -96,6 +112,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         -Wno-weak-vtables
         -pedantic
         -pedantic-errors)
+elseif (MSVC)
+    #target_compile_options(${LIBRARY_NAME} PRIVATE /W4)
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else ()
     set_target_properties(${LIBRARY_NAME} PROPERTIES
         COMPILE_FLAGS "-Wall"
@@ -236,14 +255,20 @@ if (ENABLE_TESTING)
         tests/src/unit/sink/file/flusher/repeat.cpp
         tests/src/unit/sink/file/stream.cpp
         tests/src/unit/sink/null
-        tests/src/unit/sink/syslog
         tests/src/unit/sink/tcp
         tests/src/unit/sink/udp.cpp
         tests/src/unit/stdext/string_view
         tests/src/unit/termcolor.cpp
         tests/src/unit/time.cpp
         tests/wrapper
+        ${BLACKHOLE_SYSLOG_TEST_FILES}
     )
+
+    if (MSVC)
+        #include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+        LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+    endif(MSVC)
+
 
     add_dependencies(${LIBRARY_NAME}-tests googlemock)
 
@@ -290,7 +315,7 @@ if (ENABLE_BENCHMARKING)
 endif (ENABLE_BENCHMARKING)
 
 function(enable_all_warnings TARGET)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
         target_compile_options(${TARGET} PRIVATE
             -Weverything
             -Wno-c++98-compat

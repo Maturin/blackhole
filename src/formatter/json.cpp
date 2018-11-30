@@ -24,7 +24,6 @@
 #include "../attribute.hpp"
 #include "../datetime.hpp"
 #include "../memory.hpp"
-#include "../util/deleter.hpp"
 #include "json.hpp"
 
 namespace blackhole {
@@ -356,6 +355,8 @@ json_t::json_t(properties_t properties) :
     inner(new inner_t(std::move(properties)))
 {}
 
+json_t::~json_t() = default;
+
 auto json_t::newline() const noexcept -> bool {
     return inner->newline;
 }
@@ -404,8 +405,10 @@ using formatter::json_t;
 class builder<json_t>::inner_t : public json_t::properties_t {};
 
 builder<json_t>::builder() :
-    d(new inner_t{}, deleter_t())
+    d(new inner_t{})
 {}
+
+builder<json_t>::~builder() = default;
 
 auto builder<json_t>::route(std::string route) & -> builder& {
     d->routing.unspecified = std::move(route);
@@ -476,7 +479,11 @@ auto builder<json_t>::timestamp(const std::string& pattern) & -> builder& {
         >(timestamp.time_since_epoch()).count() % 1000000;
 
         std::tm tm;
+#ifdef _MSC_VER
+        ::gmtime_s(&tm, &time);
+#else
         ::gmtime_r(&time, &tm);
+#endif
 
         generator(wr.inner, tm, static_cast<std::uint64_t>(usec));
     };
@@ -571,9 +578,6 @@ auto factory<json_t>::from(const config::node_t& config) const ->
 
     return std::move(builder).build();
 }
-
-template auto deleter_t::operator()(builder<formatter::json_t>::inner_t*) -> void;
-template auto deleter_t::operator()(formatter::json_t::inner_t*) -> void;
 
 }  // namespace v1
 }  // namespace blackhole

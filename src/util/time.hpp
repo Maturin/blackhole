@@ -6,7 +6,10 @@ namespace blackhole {
 inline namespace v1 {
 
 static auto gmtime(const time_t* t, struct tm* tp) noexcept -> struct tm* {
-    int yday;
+#ifdef _MSC_VER
+  gmtime_s(tp, t);
+#else
+  int yday;
     uintptr_t n, sec, min, hour, mday, mon, year, wday, days, leap;
 
     // The calculation is valid for positive time_t only.
@@ -66,27 +69,42 @@ static auto gmtime(const time_t* t, struct tm* tp) noexcept -> struct tm* {
     tp->tm_yday = yday;
     tp->tm_wday = static_cast<int>(wday);
     tp->tm_isdst = 0;
+#endif
 
     return tp;
 }
 
 class tzinit_t {
 public:
-    tzinit_t() { tzset(); }
+    tzinit_t() {
+#ifdef _MSC_VER
+      _tzset();
+#else
+      tzset();
+#endif
+    }
 };
 
+#ifndef _MSC_VER
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 
 static const tzinit_t tz;
 
+#ifndef _MSC_VER
 #pragma clang diagnostic pop
+#endif
 
 static auto localtime(const time_t* t, struct tm* tp) noexcept -> struct tm* {
+#ifdef _MSC_VER
+    localtime_s(tp, t);
+#else
     time_t time = *t - timezone;
     gmtime_r(&time, tp);
     tp->tm_gmtoff = timezone;
     tp->tm_zone = *tzname;
+#endif 
 
     return tp;
 }

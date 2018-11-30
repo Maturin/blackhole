@@ -49,6 +49,7 @@
 # include <sstream>
 #endif
 
+#if _MSC_VER < 1900
 #ifdef _SECURE_SCL
 # define FMT_SECURE_SCL _SECURE_SCL
 #else
@@ -93,6 +94,9 @@ inline uint32_t clzll(uint64_t x) {
 # define FMT_BUILTIN_CLZLL(n) fmt::internal::clzll(n)
 }
 }
+#endif
+#else
+# define FMT_SECURE_SCL 0
 #endif
 
 #ifdef __GNUC__

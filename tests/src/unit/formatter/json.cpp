@@ -3,6 +3,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#ifdef _MSC_VER
+#include <process.h>
+#endif
+
 #include <rapidjson/document.h>
 
 #include <blackhole/attribute.hpp>
@@ -133,7 +137,11 @@ TEST(json_t, FormatProcess) {
 
     ASSERT_TRUE(doc.HasMember("process"));
     ASSERT_TRUE(doc["process"].IsInt());
+#ifdef _MSC_VER
+    EXPECT_EQ(::_getpid(), doc["process"].GetInt());
+#else
     EXPECT_EQ(::getpid(), doc["process"].GetInt());
+#endif
 }
 
 TEST(json_t, FormatThread) {
@@ -501,7 +509,12 @@ TEST(json_t, MutateTimestamp) {
     std::array<char, 128> buffer;
     const auto time = record_t::clock_type::to_time_t(record.timestamp());
     std::tm tm;
+#ifdef _MSC_VER
+    ::gmtime_s(&tm, &time);
+#else
     ::gmtime_r(&time, &tm);
+#endif
+    
     const auto size = std::strftime(buffer.data(), buffer.size(), "%Y!", &tm);
     ASSERT_TRUE(size > 0);
 

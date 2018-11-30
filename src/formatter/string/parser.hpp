@@ -68,8 +68,12 @@ private:
     auto exact(const_iterator pos, const Range& range) const -> bool;
 
     /// Marks the parser as broken and throws an exception
+    //template<class Exception, class... Args>
+    //__attribute__((noreturn)) auto throw_(Args&&... args) -> void;
+
     template<class Exception, class... Args>
-    __attribute__((noreturn)) auto throw_(Args&&... args) -> void;
+    [[noreturn]] auto throw_(Args&&... args) -> void;
+
 };
 
 }  // namespace string

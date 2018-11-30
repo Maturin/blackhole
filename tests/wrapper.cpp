@@ -1,7 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <boost/thread/tss.hpp>
+//#include <boost/thread/tss.hpp>
 
 #include <blackhole/logger.hpp>
 #include <blackhole/scope/holder.hpp>

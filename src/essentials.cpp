@@ -29,9 +29,9 @@ auto essentials(registry_t& registry) -> void {
     registry.add<sink::console_t>(registry);
     registry.add<sink::file_t>(registry);
     registry.add<sink::null_t>();
-    registry.add<sink::socket::tcp_t>(registry);
-    registry.add<sink::socket::udp_t>(registry);
-    registry.add<sink::syslog_t>(registry);
+    //registry.add<sink::socket::tcp_t>(registry);
+    //registry.add<sink::socket::udp_t>(registry);
+    //registry.add<sink::syslog_t>(registry);
 
     registry.add<handler::blocking_t>(registry);
     // registry.add<handler::dev_t>(registry);

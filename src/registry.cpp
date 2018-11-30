@@ -56,6 +56,10 @@ builder_t::builder_t(const registry_t& registry, std::unique_ptr<config::factory
     factory(factory.release())
 {}
 
+builder_t::builder_t(builder_t&& ) = default;
+
+builder_t::~builder_t() = default;
+
 auto builder_t::configurator() noexcept -> config::factory_t& {
     return *factory;
 }

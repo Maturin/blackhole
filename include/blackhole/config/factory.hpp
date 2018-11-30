@@ -12,7 +12,7 @@ class node_t;
 class factory_t {
 public:
     /// Destroys the factory with freeing all its associated resources.
-    virtual ~factory_t() = 0;
+    virtual ~factory_t();
 
     /// Returns a const lvalue reference to the root configuration.
     virtual auto config() const -> const node_t& = 0;

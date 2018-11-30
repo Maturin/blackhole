@@ -1,6 +1,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#ifdef _MSC_VER
+#include <process.h>
+#endif
+
 #include <boost/algorithm/string/predicate.hpp>
 
 #include <blackhole/attribute.hpp>
@@ -36,7 +40,11 @@ TEST(tskv_t, Format) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::gmtime_s(&tm, &time);
+#else
     ::gmtime_r(&time, &tm);
+#endif
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S %z", &tm);
     std::ostringstream stream;
@@ -44,7 +52,11 @@ TEST(tskv_t, Format) {
     stream << "tskv"
         << "\ttimestamp=" << std::string(buffer, len)
         << "\tseverity=" << 0
+#ifdef _MSC_VER
+        << "\tpid=" << ::_getpid()
+#else
         << "\tpid=" << ::getpid()
+#endif
         << "\ttid="
 #ifdef __linux__
         << std::hex << std::internal << std::showbase << std::setw(2) << std::setfill('0')
@@ -91,7 +103,12 @@ TEST(tskv_t, FormatWithCreate) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::gmtime_s(&tm, &time);
+#else
     ::gmtime_r(&time, &tm);
+#endif
+    
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S %z", &tm);
     std::ostringstream stream;
@@ -100,7 +117,11 @@ TEST(tskv_t, FormatWithCreate) {
         << "\ttskv_format=cocaine"
         << "\ttimestamp=" << std::string(buffer, len)
         << "\tseverity=" << 0
+#ifdef _MSC_VER
+        << "\tpid=" << ::_getpid()
+#else
         << "\tpid=" << ::getpid()
+#endif
         << "\ttid="
 #ifdef __linux__
         << std::hex << std::internal << std::showbase << std::setw(2) << std::setfill('0')
@@ -172,7 +193,11 @@ TEST(tskv_t, FormatTimestampWithTimezone) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::gmtime_s(&tm, &time);
+#else
     ::gmtime_r(&time, &tm);
+#endif
     char buffer[128];
     auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
     std::ostringstream stream;
@@ -234,7 +259,11 @@ TEST(tskv_t, FormatTimestampWithTimezoneUsingLocaltime) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::localtime_s(&tm, &time);
+#else
     ::localtime_r(&time, &tm);
+#endif
     char buffer[128];
     auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
     std::ostringstream stream;

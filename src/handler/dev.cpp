@@ -3,6 +3,11 @@
 #include <iostream>
 #include <mutex>
 
+#ifdef _MSC_VER
+#include <io.h>
+#include <process.h>
+#endif
+
 #include <boost/variant/variant.hpp>
 
 #include "blackhole/attribute.hpp"
@@ -15,22 +20,25 @@
 #include "../attribute.hpp"
 #include "../datetime.hpp"
 #include "../memory.hpp"
-#include "../util/deleter.hpp"
 
 namespace blackhole {
 inline namespace v1 {
 namespace experimental {
 namespace handler {
 
+#ifndef _MSC_VER 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
+#endif 
 
 // Both standard output and error access mutex. Messages written with Blackhole will be
 // synchronized, otherwise an intermixing can occur.
 static std::mutex mutex;
 
+#ifndef _MSC_VER 
 #pragma clang diagnostic pop
+#endif
 
 namespace {
 
@@ -49,7 +57,7 @@ auto isatty(const std::ostream& stream) -> bool {
 #if defined(__linux__) || defined(__APPLE__)
         return ::isatty(::fileno(file));
 #else
-#error unsupported platform
+      return _isatty(_fileno(file));
 #endif
     } else {
         return false;
@@ -103,7 +111,12 @@ public:
             >(timestamp.time_since_epoch()).count() % 1000000;
 
             std::tm tm;
+
+#ifdef _MSC_VER
+            ::gmtime_s(&tm, &time);
+#else
             ::gmtime_r(&time, &tm);
+#endif
 
             fmt::MemoryWriter buffer;
             this->timestamp(buffer, tm, static_cast<std::uint64_t>(usec));
@@ -140,7 +153,12 @@ public:
         });
 
         tokens.emplace_back([](std::ostream& stream, const record_t& rec) {
-            stream << " " << rec.tid() << "/" << ::getpid();
+            stream << " " << rec.tid() << "/" <<
+#ifdef _MSC_VER
+                      ::_getpid();
+#else
+                      ::getpid();
+#endif
         });
 
         tokens.emplace_back([](std::ostream& stream, const record_t&) {
@@ -211,6 +229,8 @@ builder<dev_t>::builder() :
     d(new inner_t)
 {}
 
+builder<dev_t>::~builder() = default;
+
 auto builder<dev_t>::build() && -> std::unique_ptr<handler_t> {
     return blackhole::make_unique<dev_t>();
 }
@@ -223,8 +243,6 @@ auto factory<dev_t>::from(const config::node_t&) const -> std::unique_ptr<handle
     (void)registry;
     return builder<dev_t>().build();
 }
-
-template auto deleter_t::operator()(builder<experimental::handler::dev_t>::inner_t*) -> void;
 
 }  // namespace v1
 }  // namespace blackhole

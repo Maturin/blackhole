@@ -28,22 +28,27 @@ class console_t;
 template<>
 class builder<sink::console_t> {
     class inner_t;
-    std::unique_ptr<inner_t, deleter_t> d;
+    std::unique_ptr<inner_t> d;
 
 public:
-    /// Constructs a defaultly configured console sink builder.
+    /// Constructs a default configured console sink builder.
     ///
     /// By default the generated sink will write all incoming events to the standard output with no
     /// coloring.
     builder();
 
+    ~builder();
+
+    // MSVC: stdout and stderr are already defined in corecrt_wstdio.h
+
     /// Sets the destination stream to the standard output pipe.
-    auto stdout() & -> builder&;
-    auto stdout() && -> builder&&;
+
+    auto std_out() &->builder&;
+    auto std_out() && ->builder&&;
 
     /// Sets the destination stream to the standard error pipe.
-    auto stderr() & -> builder&;
-    auto stderr() && -> builder&&;
+    auto std_err() &->builder&;
+    auto std_err() && ->builder&&;
 
     /// Sets terminal color mapping for a given severity making all log events to be colored with
     /// specified color.

@@ -76,11 +76,12 @@ public:
     typedef root_logger_t result_type;
 
 private:
-    class inner_t;
-    std::unique_ptr<inner_t, deleter_t> d;
+  class inner_t;
+  std::unique_ptr<inner_t> d;
 
 public:
     builder();
+    ~builder();
 
     auto add(std::unique_ptr<handler_t> handler) & -> builder&;
     auto add(std::unique_ptr<handler_t> handler) && -> builder&&;

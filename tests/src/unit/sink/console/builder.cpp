@@ -28,7 +28,7 @@ TEST(builder, Default) {
 
 TEST(builder, RedirectToOutputWithLvalue) {
     builder<console_t> builder;
-    builder.stdout();
+    builder.std_out();
     auto sink = std::move(builder).build();
     auto& cast = static_cast<console_t&>(*sink);
 
@@ -37,7 +37,7 @@ TEST(builder, RedirectToOutputWithLvalue) {
 
 TEST(builder, RedirectToOutputWithRvalue) {
     auto sink = builder<console_t>()
-        .stdout()
+        .std_out()
         .build();
     auto& cast = static_cast<console_t&>(*sink);
 
@@ -46,7 +46,7 @@ TEST(builder, RedirectToOutputWithRvalue) {
 
 TEST(builder, RedirectToErrorWithLvalue) {
     builder<console_t> builder;
-    builder.stderr();
+    builder.std_err();
     auto sink = std::move(builder).build();
     auto& cast = static_cast<console_t&>(*sink);
 
@@ -55,7 +55,7 @@ TEST(builder, RedirectToErrorWithLvalue) {
 
 TEST(builder, RedirectToErrorWithRvalue) {
     auto sink = builder<console_t>()
-        .stderr()
+        .std_err()
         .build();
     auto& cast = static_cast<console_t&>(*sink);
 

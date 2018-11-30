@@ -28,10 +28,12 @@ struct handler_tag;
 struct formatter_tag;
 
 template<typename T, typename Parent = void>
-class __attribute__((deprecated("`partial_builder` has no future, use `blackhole::builder` instead"))) partial_builder;
+[[deprecated("`partial_builder` has no future, use `blackhole::builder` instead")]]
+class partial_builder;
 
 template<>
-class __attribute__((deprecated("`partial_builder` has no future, use `blackhole::builder` instead"))) partial_builder<root_logger_t> {
+[[deprecated("`partial_builder` has no future, use `blackhole::builder` instead")]]
+class partial_builder<root_logger_t> {
 public:
     typedef partial_builder<root_logger_t> this_type;
 
@@ -58,7 +60,8 @@ public:
 };
 
 template<typename Parent>
-class __attribute__((deprecated("`partial_builder` has no future, use `blackhole::builder` instead"))) partial_builder<blackhole::handler::blocking_t, Parent> {
+[[deprecated("`partial_builder` has no future, use `blackhole::builder` instead")]]
+class partial_builder<blackhole::handler::blocking_t, Parent> {
 public:
     typedef partial_builder<blackhole::handler::blocking_t, Parent> this_type;
 
@@ -90,7 +93,8 @@ public:
 };
 
 template<typename Parent>
-class __attribute__((deprecated("`partial_builder` has no future, use `blackhole::builder` instead"))) partial_builder<experimental::handler::dev_t, Parent> {
+[[deprecated("`partial_builder` has no future, use `blackhole::builder` instead")]]
+class partial_builder<experimental::handler::dev_t, Parent> {
 public:
     typedef partial_builder<experimental::handler::dev_t, Parent> this_type;
 
@@ -112,7 +116,8 @@ public:
 };
 
 template<typename Parent>
-class __attribute__((deprecated("`partial_builder` has no future, use `blackhole::builder` instead"))) partial_builder<formatter::string_t, Parent> {
+[[deprecated("`partial_builder` has no future, use `blackhole::builder` instead")]]
+class partial_builder<formatter::string_t, Parent> {
 public:
     typedef Parent parent_type;
     typedef formatter::string_t internal_type;
@@ -140,7 +145,8 @@ public:
 };
 
 template<typename Parent>
-class __attribute__((deprecated("`partial_builder` has no future, use `blackhole::builder` instead"))) partial_builder<sink::console_t, Parent> {
+[[deprecated("`partial_builder` has no future, use `blackhole::builder` instead")]]
+class partial_builder<sink::console_t, Parent> {
 public:
     typedef Parent parent_type;
     typedef sink::console_t internal_type;

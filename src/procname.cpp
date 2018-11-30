@@ -6,7 +6,13 @@
 #   include <libproc.h>
 #endif
 
+
+#ifdef _MSC_VER
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif 
 
 #include <cstring>
 
@@ -17,6 +23,14 @@ inline namespace v1 {
 
 namespace {
 
+#ifdef _MSC_VER
+auto procname(int pid) -> stdext::string_view {
+  (void)pid;
+  // MTD: Implement a Windows version. GetModuleName() should do the trick.
+  const char undefined_name[] = "Unknown Program Name";
+  return stdext::string_view(undefined_name, ::strlen(undefined_name));
+}
+#else
 auto procname(pid_t pid) -> stdext::string_view {
 #ifdef __linux__
     (void)pid;
@@ -32,11 +46,15 @@ auto procname(pid_t pid) -> stdext::string_view {
     }
 #endif
 }
-
+#endif
 } // namespace
 
 auto procname() -> stdext::string_view {
+#ifdef _MSC_VER
+    static const stdext::string_view name = procname(::_getpid());
+#else
     static const stdext::string_view name = procname(::getpid());
+#endif
     return name;
 }
 

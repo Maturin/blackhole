@@ -2,6 +2,8 @@
 
 #include "../factory.hpp"
 
+#include <string>
+
 namespace blackhole {
 inline namespace v1 {
 namespace formatter {
@@ -13,10 +15,11 @@ class tskv_t;
 template<>
 class builder<formatter::tskv_t> {
     class inner_t;
-    std::unique_ptr<inner_t, deleter_t> p;
+    std::unique_ptr<inner_t> p;
 
 public:
     explicit builder();
+    ~builder();
 
     auto create(const std::string& name, const std::string& value) & -> builder&;
     auto create(const std::string& name, const std::string& value) && -> builder&&;

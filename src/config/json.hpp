@@ -185,7 +185,7 @@ private:
         return cursor + "/" + key;
     }
 
-    __attribute((noreturn)) auto type_mismatch(const std::string& expected) const -> void {
+    [[noreturn]] auto type_mismatch(const std::string& expected) const -> void {
         throw config::type_mismatch(cursor.empty() ? "/" : cursor, expected, type());
     }
 

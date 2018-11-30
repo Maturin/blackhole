@@ -3,6 +3,10 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
+#ifdef _MSC_VER
+#include <process.h>
+#endif
+
 #include <blackhole/attribute.hpp>
 #include <blackhole/attributes.hpp>
 #include <blackhole/stdext/string_view.hpp>
@@ -340,7 +344,11 @@ TEST(string_t, Process) {
     writer_t writer;
     formatter->format(record, writer);
 
+#ifdef _MSC_VER
+    EXPECT_EQ(std::to_string(::_getpid()), writer.result().to_string());
+#else
     EXPECT_EQ(std::to_string(::getpid()), writer.result().to_string());
+#endif
 }
 
 TEST(string_t, ProcessIdExplicitly) {
@@ -353,7 +361,11 @@ TEST(string_t, ProcessIdExplicitly) {
     writer_t writer;
     formatter->format(record, writer);
 
+#ifdef _MSC_VER
+    EXPECT_EQ(std::to_string(::_getpid()), writer.result().to_string());
+#else
     EXPECT_EQ(std::to_string(::getpid()), writer.result().to_string());
+#endif
 }
 
 TEST(string_t, ProcessName) {
@@ -434,7 +446,8 @@ struct threadname_guard {
         #elif __APPLE__
             ::pthread_setname_np(name);
         #else
-        #error "Not implemented. Please write an implementation for your OS."
+      // #error "Not implemented. Please write an implementation for your OS."
+      // TODO: Add functionality for setting the thread name on Windows.
         #endif
     }
 
@@ -444,7 +457,8 @@ struct threadname_guard {
         #elif __APPLE__
             ::pthread_setname_np("");
         #else
-        #error "Not implemented. Please write an implementation for your OS."
+      //#error "Not implemented. Please write an implementation for your OS."
+      // TODO: Add functionality for setting the thread name on Windows.
         #endif
     }
 };
@@ -492,7 +506,11 @@ TEST(string_t, Timestamp) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::gmtime_s(&tm, &time);
+#else
     ::gmtime_r(&time, &tm);
+#endif
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
     fmt::MemoryWriter wr;
@@ -518,7 +536,11 @@ TEST(string_t, TimestampExplicit) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::gmtime_s(&tm, &time);
+#else
     ::gmtime_r(&time, &tm);
+#endif
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%Y", &tm);
     fmt::MemoryWriter wr;
@@ -542,7 +564,11 @@ TEST(string_t, TimestampExplicitWithType) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::gmtime_s(&tm, &time);
+#else
     ::gmtime_r(&time, &tm);
+#endif
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &tm);
     fmt::MemoryWriter wr;
@@ -566,7 +592,11 @@ TEST(string_t, TimestampSpec) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::gmtime_s(&tm, &time);
+#else
     ::gmtime_r(&time, &tm);
+#endif
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
     fmt::MemoryWriter wr;
@@ -593,7 +623,11 @@ TEST(string_t, TimestampLocaltime) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::localtime_s(&tm, &time);
+#else
     ::localtime_r(&time, &tm);
+#endif
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
     fmt::MemoryWriter wr;
@@ -619,7 +653,11 @@ TEST(string_t, TimestampExplicitWithTypeLocaltime) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::localtime_s(&tm, &time);
+#else
     ::localtime_r(&time, &tm);
+#endif
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &tm);
     fmt::MemoryWriter wr;
@@ -643,7 +681,11 @@ TEST(string_t, TimestampSpecLocaltime) {
     const auto timestamp = record.timestamp();
     const auto time = record_t::clock_type::to_time_t(timestamp);
     std::tm tm;
+#ifdef _MSC_VER
+    ::localtime_s(&tm, &time);
+#else
     ::localtime_r(&time, &tm);
+#endif
     char buffer[128];
     const auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
     fmt::MemoryWriter wr;

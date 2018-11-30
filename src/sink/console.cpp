@@ -1,6 +1,10 @@
 #include "blackhole/sink/console.hpp"
 
+#ifdef _MSC_VER
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <iostream>
 #include <map>
@@ -18,22 +22,25 @@
 
 #include "../filter/zen.hpp"
 #include "../memory.hpp"
-#include "../util/deleter.hpp"
 #include "console.hpp"
 
 namespace blackhole {
 inline namespace v1 {
 namespace sink {
 
+#ifndef _MSC_VER
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
+#endif
 
 // Both standard output and error access mutex. Messages written with Blackhole will be
 // synchronized, otherwise an intermixing can occur.
 static std::mutex mutex;
 
+#ifndef _MSC_VER
 #pragma clang diagnostic pop
+#endif
 
 namespace {
 
@@ -52,7 +59,7 @@ auto isatty(const std::ostream& stream) -> bool {
 #if defined(__linux__) || defined(__APPLE__)
         return ::isatty(::fileno(file));
 #else
-#error unsupported platform
+        return ::_isatty(::_fileno(file));
 #endif
     } else {
         return false;
@@ -120,22 +127,24 @@ builder<sink::console_t>::builder() :
     d(new inner_t{&std::cout, [](const record_t&) -> termcolor_t { return {}; }})
 {}
 
-auto builder<sink::console_t>::stdout() & -> builder& {
+builder<sink::console_t>::~builder() = default;
+
+auto builder<sink::console_t>::std_out() & -> builder& {
     d->stream = &std::cout;
     return *this;
 }
 
-auto builder<sink::console_t>::stdout() && -> builder&& {
-    return std::move(stdout());
+auto builder<sink::console_t>::std_out() && -> builder&& {
+    return std::move(std_out());
 }
 
-auto builder<sink::console_t>::stderr() & -> builder& {
-    d->stream = &std::cerr;
+auto builder<sink::console_t>::std_err() & -> builder& {
+  d->stream = &std::cerr;
     return *this;
 }
 
-auto builder<sink::console_t>::stderr() && -> builder&& {
-    return std::move(stderr());
+auto builder<sink::console_t>::std_err() && -> builder&& {
+  return std::move(std_err());
 }
 
 auto builder<sink::console_t>::colorize(severity_t severity, termcolor_t color) & -> builder& {
@@ -181,8 +190,6 @@ auto factory<sink::console_t>::from(const config::node_t& config) const -> std::
 
     return blackhole::make_unique<sink::console_t>();
 }
-
-template auto deleter_t::operator()(builder<sink::console_t>::inner_t* value) -> void;
 
 }  // namespace v1
 }  // namespace blackhole

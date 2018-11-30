@@ -94,10 +94,11 @@ class json_t;
 template<>
 class builder<formatter::json_t> {
     class inner_t;
-    std::unique_ptr<inner_t, deleter_t> d;
+    std::unique_ptr<inner_t> d;
 
 public:
     builder();
+    ~builder();
 
     /// Configures attribute routing for all not mentioned attributes.
     auto route(std::string route) & -> builder&;

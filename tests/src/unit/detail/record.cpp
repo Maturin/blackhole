@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#include <thread>
+
 namespace blackhole {
 inline namespace v1 {
 namespace {
@@ -84,7 +86,11 @@ TEST(owned, FromRecordThreadId) {
         result.reset(new recordbuf_t(record));
     }
 
-    EXPECT_EQ(::pthread_self(), result->into_view().tid());
+#ifdef _MSC_VER
+    EXPECT_EQ(std::this_thread::get_id(), result->into_view().tid());
+#else
+   EXPECT_EQ(::pthread_self(), result->into_view().tid());
+#endif
 }
 
 TEST(owned, FromRecordAttributes) {

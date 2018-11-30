@@ -4,6 +4,9 @@
     #include <sys/syscall.h>
     #include <sys/types.h>
     #include <unistd.h>
+#else
+    #include <io.h>
+    #include <process.h>
 #endif
 
 #include <blackhole/attribute.hpp>
@@ -47,7 +50,11 @@ TEST(Record, Pid) {
 
     record_t record(42, message, pack);
 
+#ifdef _MSC_VER
+    EXPECT_EQ(::_getpid(), record.pid());
+#else
     EXPECT_EQ(::getpid(), record.pid());
+#endif
 }
 
 TEST(Record, Lwp) {
@@ -69,7 +76,12 @@ TEST(Record, Tid) {
     const attribute_pack pack;
 
     record_t record(42, message, pack);
-    EXPECT_EQ(::pthread_self(), record.tid());
+
+#ifdef _MSC_VER
+    EXPECT_EQ(std::this_thread::get_id(), record.tid());
+#else
+     EXPECT_EQ(::pthread_self(), record.tid());
+#endif
 }
 
 TEST(Record, NullTimestampByDefault) {

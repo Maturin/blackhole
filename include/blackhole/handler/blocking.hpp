@@ -13,10 +13,11 @@ class blocking_t;
 template<>
 class builder<handler::blocking_t> {
     class inner_t;
-    std::unique_ptr<inner_t, deleter_t> d;
+    std::unique_ptr<inner_t> d;
 
 public:
     builder();
+    ~builder();
 
     auto set(std::unique_ptr<formatter_t> formatter) & -> builder&;
     auto set(std::unique_ptr<formatter_t> formatter) && -> builder&&;

@@ -10,7 +10,6 @@
 #include "blackhole/stdext/string_view.hpp"
 #include "blackhole/record.hpp"
 
-#include "../util/deleter.hpp"
 #include "file.hpp"
 #include "file/flusher/bytecount.hpp"
 #include "file/flusher/repeat.hpp"
@@ -63,9 +62,9 @@ auto parse_dunit(const std::string& encoded) -> std::uint64_t {
 
     const std::map<std::string, std::uint64_t> mapping {
         {"B",  1},
-        {"kB", 1e3},
-        {"MB", 1e6},
-        {"GB", 1e9},
+        {"kB", std::uint64_t(1e3)},
+        {"MB", std::uint64_t(1e6)},
+        {"GB", std::uint64_t(1e9)},
         {"KiB", 1ULL << 10},
         {"MiB", 1ULL << 20},
         {"GiB", 1ULL << 30},
@@ -166,11 +165,13 @@ public:
 };
 
 builder<sink::file_t>::builder(const std::string& path) :
-    p(new inner_t{path, nullptr, nullptr}, deleter_t())
+    p(new inner_t{path, nullptr, nullptr})
 {
     p->rfactory = blackhole::make_unique<sink::file::rotate::null_factory_t>();
     p->ffactory = blackhole::make_unique<sink::file::flusher::repeat_factory_t>(std::size_t(0));
 }
+
+builder<sink::file_t>::~builder() = default;
 
 auto builder<sink::file_t>::flush_every(bytes_t bytes) & -> builder& {
     p->ffactory = blackhole::make_unique<sink::file::flusher::bytecount_factory_t>(bytes.count());
@@ -246,7 +247,6 @@ auto factory<sink::file_t>::from(const config::node_t& config) const -> std::uni
     return std::move(builder).build();
 }
 
-template auto deleter_t::operator()(builder<sink::file_t>::inner_t* value) -> void;
 
 } // namespace v1
 } // namespace blackhole

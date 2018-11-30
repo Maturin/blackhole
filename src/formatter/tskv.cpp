@@ -15,7 +15,6 @@
 #include "../attribute.hpp"
 #include "../datetime.hpp"
 #include "../memory.hpp"
-#include "../util/deleter.hpp"
 #include "string/token.hpp"
 
 namespace blackhole {
@@ -96,10 +95,10 @@ public:
 
     auto add_tid() -> void {
         wr.write("\ttid={:#x}",
-#ifdef __linux__
-            record.tid()
-#elif __APPLE__
-            reinterpret_cast<unsigned long>(record.tid())
+#ifdef __APPLE__
+          reinterpret_cast<unsigned long>(record.tid())
+#else
+          record.tid()
 #endif
         );
     }
@@ -166,9 +165,17 @@ private:
 
         std::tm tm;
         if (token.gmtime) {
-            ::gmtime_r(&time, &tm);
+#ifdef _MSC_VER
+          ::gmtime_s(&tm, &time);
+#else
+          ::gmtime_r(&time, &tm);
+#endif 
         } else {
-            ::localtime_r(&time, &tm);
+#ifdef _MSC_VER
+          ::localtime_s(&tm, &time);
+#else
+          ::localtime_r(&time, &tm);
+#endif 
         }
 
         fmt::MemoryWriter buffer;
@@ -269,10 +276,12 @@ public:
 };
 
 builder<tskv_t>::builder() :
-    p(new inner_t{}, deleter_t())
+    p(new inner_t{})
 {
     p->data.timestamps["timestamp"] = {"%Y-%m-%d %H:%M:%S %z", "{}", true};
 }
+
+builder<tskv_t>::~builder() = default;
 
 auto builder<tskv_t>::create(const std::string& name, const std::string& value) & -> builder& {
     p->data.attributes[name] = value;
@@ -368,7 +377,6 @@ auto factory<tskv_t>::from(const config::node_t& config) const -> std::unique_pt
     return std::move(builder).build();
 }
 
-template auto deleter_t::operator()(builder<formatter::tskv_t>::inner_t* value) -> void;
 
 }  // namespace v1
 }  // namespace blackhole

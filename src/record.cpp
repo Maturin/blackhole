@@ -4,6 +4,8 @@
     #include <sys/syscall.h>
     #include <sys/types.h>
     #include <unistd.h>
+#else
+    #include <process.h>
 #endif
 
 #include <thread>
@@ -28,7 +30,11 @@ record_t::record_t(severity_t severity,
     inner.severity = severity;
     inner.timestamp = time_point();
 
+#ifdef _MSC_VER
+    inner.tid = std::this_thread::get_id();
+#else
     inner.tid = ::pthread_self();
+#endif 
 
     inner.attributes = attributes;
 }
@@ -50,7 +56,11 @@ auto record_t::timestamp() const noexcept -> time_point {
 }
 
 auto record_t::pid() const noexcept -> std::uint64_t {
-    return static_cast<std::uint64_t>(::getpid());
+#ifdef _MSC_VER
+  return static_cast<std::uint64_t>(::_getpid());
+#else
+  return static_cast<std::uint64_t>(::getpid());
+#endif 
 }
 
 auto record_t::lwp() const noexcept -> std::uint64_t {
@@ -61,7 +71,11 @@ auto record_t::lwp() const noexcept -> std::uint64_t {
 #endif
 }
 
+#ifdef _MSC_VER
+auto record_t::tid() const noexcept -> std::thread::id {
+#else
 auto record_t::tid() const noexcept -> std::thread::native_handle_type {
+#endif
     return inner().tid;
 }
 

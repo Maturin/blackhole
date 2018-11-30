@@ -12,14 +12,14 @@ public:
 
 private:
     class inner_t;
-
-    std::unique_ptr<inner_t, deleter_t> inner;
+    std::unique_ptr<inner_t> inner;
 
 public:
     /// Constructs a defaultly configured JSON formatter, which will produce plain trees with no
     /// filtering without adding a separator character at the end.
     json_t();
     json_t(properties_t properties);
+    ~json_t();
 
     /// Returns true if there will be newline sequence added after each formatted message.
     auto newline() const noexcept -> bool;
